@@ -4,7 +4,7 @@ import type { AppConfig } from "../utils/config.js";
 export const notePayloadSchema = z.object({
   title: z.string(),
   tags: z.array(z.string()),
-  backlinks: z.array(z.string()),
+  backlinks: z.array(z.string()).optional().default([]),
   note_type: z.string(),
   para_suggestion: z.string(),
   created_date: z.string(),

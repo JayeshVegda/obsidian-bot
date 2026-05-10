@@ -70,7 +70,7 @@ validation:
 
 naming:
   strip_special_characters: true
-  use_pascal_case_with_underscores: true
+  use_pascal_case_with_underscores: false
   duplicate_suffix_timestamp_format: "%Y%m%dT%H%M%S"
   max_filename_length: 200
 
@@ -78,8 +78,6 @@ frontmatter:
   ordered_fields:
     - title
     - tags
-    - backlinks
-    - photos
     - note_type
     - para_suggestion
     - created_date
@@ -90,8 +88,6 @@ frontmatter:
     status: inbox
   list_fields:
     - tags
-    - backlinks
-    - photos
 
 index:
   incremental_on_save: false
