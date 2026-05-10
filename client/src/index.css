@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 248 250 255;
+    --foreground: 17 17 20;
+    --card: 255 255 255;
+    --card-border: 217 217 222;
+    --primary: 47 95 255;
+    --primary-hover: 26 63 255;
+    --muted: 238 238 240;
+    --muted-fg: 116 116 130;
+    --success: 34 197 94;
+    --warning: 245 158 11;
+    --danger: 239 68 68;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-ink-200;
+  }
+
+  html {
+    @apply antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    @apply bg-ink-50 text-ink-950 font-sans;
+    background-image:
+      radial-gradient(at 20% 10%, rgba(47, 95, 255, 0.05) 0px, transparent 50%),
+      radial-gradient(at 80% 80%, rgba(91, 178, 255, 0.04) 0px, transparent 50%);
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-1.5 h-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-ink-300 rounded-full;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl border border-ink-200 shadow-sm;
+  }
+
+  .btn-primary {
+    @apply bg-vault-500 hover:bg-vault-600 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-white hover:bg-ink-50 text-ink-700 font-medium px-4 py-2 rounded-lg border border-ink-200 transition-colors duration-150 disabled:opacity-50;
+  }
+
+  .btn-danger {
+    @apply bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-150;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 rounded-lg border border-ink-200 bg-white text-ink-900 placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-vault-400 focus:border-transparent transition-all duration-150 text-sm;
+  }
+
+  .tag-chip {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-vault-50 text-vault-700 text-xs font-medium border border-vault-100;
+  }
+
+  .stat-card {
+    @apply card p-4 flex flex-col gap-1;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150;
+  }
+
+  .nav-link.active {
+    @apply bg-vault-50 text-vault-700;
+  }
+
+  .nav-link:not(.active) {
+    @apply text-ink-600 hover:text-ink-900 hover:bg-ink-100;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+}

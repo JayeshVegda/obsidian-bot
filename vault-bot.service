@@ -1,0 +1,24 @@
+[Unit]
+Description=Vault Bot — Obsidian knowledge pipeline
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/home/YOUR_USERNAME/vault-bot
+ExecStart=/usr/bin/node server/dist/index.js
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=vault-bot
+
+# Load .env
+EnvironmentFile=/home/YOUR_USERNAME/vault-bot/.env
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

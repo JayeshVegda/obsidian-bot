@@ -1,0 +1,118 @@
+paths:
+  quick_notes_folder: "00_Inbox/_Quick_Notes"
+  valid_top_level_para_folders:
+    - "00_Inbox"
+    - "10_Projects"
+    - "20_Areas"
+    - "30_Resources"
+    - "40_Archives"
+    - "99_System"
+
+photos:
+  attachments_folder: "00_Inbox/_Attachments"
+  max_file_size_bytes: 10485760
+  allowed_mime_types:
+    - image/jpeg
+    - image/png
+    - image/gif
+    - image/webp
+    - image/heic
+  serve_via_api: true
+
+json_input:
+  required_fields:
+    - title
+    - tags
+    - backlinks
+    - note_type
+    - para_suggestion
+    - created_date
+    - content
+  field_types:
+    title: str
+    tags: list
+    backlinks: list
+    note_type: str
+    para_suggestion: str
+    created_date: str
+    content: str
+    photos: list
+
+note_types:
+  allowed:
+    - idea
+    - reference
+    - task
+    - log
+    - meeting
+    - book
+    - person
+    - code
+
+validation:
+  min_content_words: 20
+  max_content_words: 5000
+  max_title_length: 120
+  forbidden_titles:
+    - note
+    - untitled
+    - test
+    - temp
+    - draft
+    - random
+    - misc
+    - stuff
+    - things
+    - new
+  forbidden_title_match: exact_word_only
+  para_suggestion:
+    validate_top_level_only: true
+
+naming:
+  strip_special_characters: true
+  use_pascal_case_with_underscores: true
+  duplicate_suffix_timestamp_format: "%Y%m%dT%H%M%S"
+  max_filename_length: 200
+
+frontmatter:
+  ordered_fields:
+    - title
+    - tags
+    - backlinks
+    - photos
+    - note_type
+    - para_suggestion
+    - created_date
+    - source
+    - status
+  static_fields:
+    source: webapp
+    status: inbox
+  list_fields:
+    - tags
+    - backlinks
+    - photos
+
+index:
+  incremental_on_save: false
+  full_rebuild_on_reindex_command: true
+  last_n_notes: 10
+  last_n_notes_sort_by: file_modification_time
+  tag_frequency_source: tags_only
+  orphan_detection: true
+  top_backlink_targets_count: 20
+
+runtime:
+  retry_state_file: "retry_state.json"
+  bot_state_file: "bot_state.json"
+
+logging:
+  log_dir: "logs"
+  log_file: "bot.log"
+  max_bytes: 5242880
+  backup_count: 3
+
+web:
+  host: "0.0.0.0"
+  port: 5000
+  prompts_file: "prompts.yaml"

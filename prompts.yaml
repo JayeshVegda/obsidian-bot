@@ -1,0 +1,169 @@
+prompts:
+  - id: idea
+    label: Idea
+    description: For capturing raw ideas and exploratory thoughts.
+    prompt: |
+      You are writing an "idea" note for an Obsidian vault.
+      Read vault context from: {vault_index_url}
+      Reuse existing tags from the vault index whenever relevant.
+      para_suggestion must use one valid PARA top-level folder from config (for example: 00_Inbox, 10_Projects, 20_Areas, 30_Resources, 40_Archives, 99_System).
+      Return only one valid JSON object inside a fenced JSON code block.
+      Content must be structured markdown, minimum 20 words, maximum 5000 words.
+
+      Required JSON schema:
+      {
+        "title": "string",
+        "tags": ["string"],
+        "backlinks": ["string"],
+        "note_type": "idea",
+        "para_suggestion": "string",
+        "created_date": "ISO date or datetime string",
+        "content": "string"
+      }
+  - id: reference
+    label: Reference
+    description: For storing factual material, links, and source-backed notes.
+    prompt: |
+      You are writing a "reference" note for an Obsidian vault.
+      Read vault context from: {vault_index_url}
+      Reuse existing tags from the vault index whenever relevant.
+      para_suggestion must use one valid PARA top-level folder from config.
+      Return only one valid JSON object inside a fenced JSON code block.
+      Content must be structured markdown, minimum 20 words, maximum 5000 words.
+
+      Required JSON schema:
+      {
+        "title": "string",
+        "tags": ["string"],
+        "backlinks": ["string"],
+        "note_type": "reference",
+        "para_suggestion": "string",
+        "created_date": "ISO date or datetime string",
+        "content": "string"
+      }
+  - id: book
+    label: Book
+    description: For book takeaways, summaries, and highlights.
+    prompt: |
+      You are writing a "book" note for an Obsidian vault.
+      Read vault context from: {vault_index_url}
+      Reuse existing tags from the vault index whenever relevant.
+      para_suggestion must use one valid PARA top-level folder from config.
+      Return only one valid JSON object inside a fenced JSON code block.
+      Content must be structured markdown, minimum 20 words, maximum 5000 words.
+
+      Required JSON schema:
+      {
+        "title": "string",
+        "tags": ["string"],
+        "backlinks": ["string"],
+        "note_type": "book",
+        "para_suggestion": "string",
+        "created_date": "ISO date or datetime string",
+        "content": "string"
+      }
+  - id: meeting
+    label: Meeting
+    description: For meeting records, action items, and decisions.
+    prompt: |
+      You are writing a "meeting" note for an Obsidian vault.
+      Read vault context from: {vault_index_url}
+      Reuse existing tags from the vault index whenever relevant.
+      para_suggestion must use one valid PARA top-level folder from config.
+      Return only one valid JSON object inside a fenced JSON code block.
+      Content must be structured markdown, minimum 20 words, maximum 5000 words.
+
+      Required JSON schema:
+      {
+        "title": "string",
+        "tags": ["string"],
+        "backlinks": ["string"],
+        "note_type": "meeting",
+        "para_suggestion": "string",
+        "created_date": "ISO date or datetime string",
+        "content": "string"
+      }
+  - id: task
+    label: Task
+    description: For actionable task notes, plans, and execution steps.
+    prompt: |
+      You are writing a "task" note for an Obsidian vault.
+      Read vault context from: {vault_index_url}
+      Reuse existing tags from the vault index whenever relevant.
+      para_suggestion must use one valid PARA top-level folder from config.
+      Return only one valid JSON object inside a fenced JSON code block.
+      Content must be structured markdown, minimum 20 words, maximum 5000 words.
+
+      Required JSON schema:
+      {
+        "title": "string",
+        "tags": ["string"],
+        "backlinks": ["string"],
+        "note_type": "task",
+        "para_suggestion": "string",
+        "created_date": "ISO date or datetime string",
+        "content": "string"
+      }
+  - id: log
+    label: Log
+    description: For chronological logs, progress updates, and events.
+    prompt: |
+      You are writing a "log" note for an Obsidian vault.
+      Read vault context from: {vault_index_url}
+      Reuse existing tags from the vault index whenever relevant.
+      para_suggestion must use one valid PARA top-level folder from config.
+      Return only one valid JSON object inside a fenced JSON code block.
+      Content must be structured markdown, minimum 20 words, maximum 5000 words.
+
+      Required JSON schema:
+      {
+        "title": "string",
+        "tags": ["string"],
+        "backlinks": ["string"],
+        "note_type": "log",
+        "para_suggestion": "string",
+        "created_date": "ISO date or datetime string",
+        "content": "string"
+      }
+  - id: code
+    label: Code
+    description: For code snippets, debugging notes, and implementation references.
+    prompt: |
+      You are writing a "code" note for an Obsidian vault.
+      Read vault context from: {vault_index_url}
+      Reuse existing tags from the vault index whenever relevant.
+      para_suggestion must use one valid PARA top-level folder from config.
+      Return only one valid JSON object inside a fenced JSON code block.
+      Content must be structured markdown, minimum 20 words, maximum 5000 words.
+
+      Required JSON schema:
+      {
+        "title": "string",
+        "tags": ["string"],
+        "backlinks": ["string"],
+        "note_type": "code",
+        "para_suggestion": "string",
+        "created_date": "ISO date or datetime string",
+        "content": "string"
+      }
+  - id: person
+    label: Person
+    description: For people profiles, interactions, and relationship notes.
+    prompt: |
+      You are writing a "person" note for an Obsidian vault.
+      Read vault context from: {vault_index_url}
+      Reuse existing tags from the vault index whenever relevant.
+      para_suggestion must use one valid PARA top-level folder from config.
+      Return only one valid JSON object inside a fenced JSON code block.
+      Content must be structured markdown, minimum 20 words, maximum 5000 words.
+
+      Required JSON schema:
+      {
+        "title": "string",
+        "tags": ["string"],
+        "backlinks": ["string"],
+        "note_type": "person",
+        "para_suggestion": "string",
+        "created_date": "ISO date or datetime string",
+        "content": "string"
+      }
