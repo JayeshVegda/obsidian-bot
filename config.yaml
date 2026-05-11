@@ -41,6 +41,7 @@ json_input:
 note_types:
   allowed:
     - idea
+    - fleeting
     - reference
     - task
     - log
@@ -48,6 +49,9 @@ note_types:
     - book
     - person
     - code
+    - business
+    - moc
+    - other
 
 validation:
   min_content_words: 20

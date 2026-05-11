@@ -153,7 +153,7 @@ All routes returning data require `X-API-Key: <your-key>` header, except `GET /a
   "title": "string",
   "tags": ["string"],
   "backlinks": ["string"],
-  "note_type": "idea|reference|book|meeting|task|log|code|person",
+  "note_type": "idea|fleeting|reference|task|log|meeting|book|person|code|business|moc|other",
   "para_suggestion": "00_Inbox",
   "created_date": "2026-05-10",
   "content": "Markdown string (min 20 words)",

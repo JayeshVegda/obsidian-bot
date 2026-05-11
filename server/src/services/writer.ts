@@ -4,20 +4,20 @@ import yaml from "js-yaml";
 import type { NotePayload } from "./validator.js";
 import type { AppConfig } from "../utils/config.js";
 
-function safeFilenameFromTitle(title: string, cfg: AppConfig): string {
+function safeFilenameFromTitle(title: string, cfg: AppConfig, createdDate: string): string {
   let cleaned = title.trim();
   if (cfg.naming.strip_special_characters) {
     cleaned = cleaned.replace(/[^A-Za-z0-9\s_]+/g, "");
   }
-  const parts = cleaned.split(/[\s_]+/).filter(Boolean);
-  let stem: string;
-  if (cfg.naming.use_pascal_case_with_underscores) {
-    stem = parts.map((p) => p[0].toUpperCase() + p.slice(1).toLowerCase()).join("_");
-  } else {
-    stem = parts.join("_");
-  }
-  stem = stem || "Untitled";
-  const filename = `${stem}.md`;
+  cleaned = cleaned || "Untitled";
+
+  const date = new Date(createdDate);
+  const day = date.getDate();
+  const month = date.toLocaleString('en', { month: 'short' });
+  const year = String(date.getFullYear()).slice(-2);
+  const datePrefix = `${day}-${month}-${year}`;
+  
+  const filename = `${datePrefix}, ${cleaned}.md`;
   return filename.slice(0, cfg.naming.max_filename_length);
 }
 
@@ -63,7 +63,7 @@ export function writeNote(
   const noteDir = resolve(vaultRoot, quickNotesFolder);
   mkdirSync(noteDir, { recursive: true });
 
-  let filename = safeFilenameFromTitle(payload.title, cfg);
+  let filename = safeFilenameFromTitle(payload.title, cfg, payload.created_date);
   let notePath = join(noteDir, filename);
 
   if (existsSync(notePath)) {

@@ -112,7 +112,8 @@ Bad examples:
 - Type: string
 - Required: yes
 - Must be exactly one of (lowercase):
-  `idea | reference | task | log | meeting | book | person | code`
+  `idea | fleeting | reference | task | log | meeting | book | person | code | business | moc | other`
+- For "other" type: AI generates a custom one-word slug (e.g., philosophy, parenting, language)
 - No other values accepted
 
 ---
@@ -213,7 +214,7 @@ Before outputting JSON, silently verify every item:
 - [ ] Tags reuse vault index tags wherever possible
 - [ ] `backlinks` is optional (can be empty or omitted)
 - [ ] Every backlink matches an exact vault note title format
-- [ ] `note_type` is exactly one of the 8 allowed values
+- [ ] `note_type` is exactly one of the 12 allowed values (or AI-generated custom slug for "other")
 - [ ] `para_suggestion` starts with a valid top-level PARA folder
 - [ ] `created_date` is valid ISO 8601 format
 - [ ] `content` is at least 20 words
