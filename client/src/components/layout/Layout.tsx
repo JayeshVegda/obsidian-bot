@@ -19,9 +19,8 @@ import { useReindex, useRetryPush, useVaultStatus } from "@/hooks/useVault";
 import { toast } from "@/components/ui/Toaster";
 
 const NAV = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard", end: true },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/save", icon: FilePlus, label: "Save Note" },
-  { to: "/prompts", icon: BookOpen, label: "Prompts" },
   { to: "/photos", icon: Image, label: "Photos" },
   { to: "/settings", icon: Settings, label: "Settings" },
 ];

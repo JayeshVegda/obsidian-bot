@@ -28,8 +28,9 @@ export default function App() {
             </AuthGuard>
           }
         >
-          <Route index element={<DashboardPage />} />
+          <Route index element={<Navigate to="/save" replace />} />
           <Route path="save" element={<SaveNotePage />} />
+          <Route path="dashboard" element={<DashboardPage />} />
           <Route path="prompts" element={<PromptsPage />} />
           <Route path="photos" element={<PhotosPage />} />
           <Route path="settings" element={<SettingsPage />} />
