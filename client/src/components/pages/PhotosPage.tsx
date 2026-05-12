@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Image, Trash2, Upload, Copy, RefreshCw, Check } from "lucide-react";
+import { Image, Trash2, Upload, Copy, RefreshCw, Check, Camera } from "lucide-react";
 import { usePhotos, useUploadPhoto, useDeletePhoto } from "@/hooks/useVault";
 import { toast } from "@/components/ui/Toaster";
 import { formatDate, formatBytes, cn } from "@/lib/utils";
@@ -30,7 +30,8 @@ export function PhotosPage() {
   const { data: photos, isLoading, refetch } = usePhotos(50);
   const uploadPhoto = useUploadPhoto();
   const deletePhoto = useDeletePhoto();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const [deletingPath, setDeletingPath] = useState<string | null>(null);
   const [noteTitle, setNoteTitle] = useState("attachment");
   // For HTTP fallback: show the text to copy inline
@@ -101,7 +102,7 @@ export function PhotosPage() {
       {/* Upload panel */}
       <div className="card p-4 space-y-3">
         <p className="text-sm font-medium text-ink-700">Upload Photo</p>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="text"
             value={noteTitle}
@@ -109,23 +110,46 @@ export function PhotosPage() {
             placeholder="Note title (for filename)"
             className="input flex-1"
           />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploadPhoto.isPending}
-            className="btn-primary flex items-center gap-2 whitespace-nowrap"
-          >
-            {uploadPhoto.isPending ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Upload className="w-4 h-4" />
-            )}
-            {uploadPhoto.isPending ? "Uploading…" : "Choose File"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={uploadPhoto.isPending}
+              className="btn-secondary flex items-center gap-2 flex-1 sm:flex-initial whitespace-nowrap"
+            >
+              {uploadPhoto.isPending ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Camera className="w-4 h-4" />
+              )}
+              Camera
+            </button>
+            <button
+              onClick={() => galleryInputRef.current?.click()}
+              disabled={uploadPhoto.isPending}
+              className="btn-primary flex items-center gap-2 flex-1 sm:flex-initial whitespace-nowrap"
+            >
+              {uploadPhoto.isPending ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+              Gallery
+            </button>
+          </div>
+          {/* Camera input - uses capture to open camera directly */}
           <input
-            ref={fileInputRef}
+            ref={cameraInputRef}
             type="file"
             accept="image/*"
             capture="environment"
+            className="hidden"
+            onChange={handleUpload}
+          />
+          {/* Gallery input - no capture attribute allows gallery selection on mobile */}
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
             className="hidden"
             onChange={handleUpload}
           />

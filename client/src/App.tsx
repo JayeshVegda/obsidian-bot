@@ -5,7 +5,6 @@ import { LoginPage } from "./components/pages/LoginPage";
 import { Layout } from "./components/layout/Layout";
 import { DashboardPage } from "./components/pages/DashboardPage";
 import { SaveNotePage } from "./components/pages/SaveNotePage";
-import { PromptsPage } from "./components/pages/PromptsPage";
 import { PhotosPage } from "./components/pages/PhotosPage";
 import { SettingsPage } from "./components/pages/SettingsPage";
 
@@ -31,7 +30,6 @@ export default function App() {
           <Route index element={<Navigate to="/save" replace />} />
           <Route path="save" element={<SaveNotePage />} />
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="prompts" element={<PromptsPage />} />
           <Route path="photos" element={<PhotosPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>

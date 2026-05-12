@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, X, Loader2, CheckCircle, AlertTriangle, ImagePlus, Trash2 } from "lucide-react";
+import { Plus, X, Loader2, CheckCircle, AlertTriangle, ImagePlus, Trash2, ClipboardPaste } from "lucide-react";
 import { useSaveNote, useVaultConfig, useUploadPhoto } from "@/hooks/useVault";
 import { toast } from "@/components/ui/Toaster";
 import { cn, formatBytes } from "@/lib/utils";
@@ -80,45 +80,71 @@ function TagInput({
   );
 }
 
-function JsonImportSection({
+function PasteJsonButton({
   onImport,
 }: {
   onImport: (data: Partial<FormData & { photos: string[] }>) => void;
 }) {
-  const [json, setJson] = useState("");
-  const [error, setError] = useState("");
+  const [isPasting, setIsPasting] = useState(false);
 
-  function handleImport() {
+  async function handlePaste() {
+    setIsPasting(true);
     try {
-      const parsed = JSON.parse(json);
+      let text = "";
+      
+      // Try clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        text = await navigator.clipboard.readText();
+      } else {
+        // Fallback for HTTP - create a temporary input
+        const input = document.createElement("textarea");
+        input.style.cssText = "position:fixed;top:0;left:0;opacity:0;pointer-events:none";
+        document.body.appendChild(input);
+        input.focus();
+        document.execCommand("paste");
+        text = input.value;
+        document.body.removeChild(input);
+        
+        if (!text) {
+          toast("error", "Clipboard access denied", "Please use HTTPS or paste manually");
+          return;
+        }
+      }
+
+      if (!text.trim()) {
+        toast("error", "Clipboard empty", "Nothing to paste");
+        return;
+      }
+
+      // Try to parse JSON
+      const parsed = JSON.parse(text);
       onImport(parsed);
-      setJson("");
-      setError("");
       toast("success", "JSON imported", "Form fields populated");
-    } catch {
-      setError("Invalid JSON — check the format and try again");
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        toast("error", "Invalid JSON", "The clipboard content is not valid JSON");
+      } else {
+        toast("error", "Paste failed", "Could not read from clipboard");
+      }
+    } finally {
+      setIsPasting(false);
     }
   }
 
   return (
-    <div className="card p-4 space-y-3 border-dashed">
-      <p className="text-sm font-medium text-ink-600">Paste AI-generated JSON</p>
-      <textarea
-        value={json}
-        onChange={(e) => { setJson(e.target.value); setError(""); }}
-        placeholder={'{ "title": "...", "tags": [...], ... }'}
-        className="input h-28 resize-none font-mono text-xs"
-      />
-      {error && <p className="text-xs text-red-500">{error}</p>}
-      <button
-        type="button"
-        onClick={handleImport}
-        disabled={!json.trim()}
-        className="btn-secondary text-sm"
-      >
-        Import JSON
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={handlePaste}
+      disabled={isPasting}
+      className="btn-primary flex items-center gap-2 w-full justify-center py-4 text-base"
+    >
+      {isPasting ? (
+        <Loader2 className="w-5 h-5 animate-spin" />
+      ) : (
+        <ClipboardPaste className="w-5 h-5" />
+      )}
+      {isPasting ? "Reading clipboard..." : "Paste JSON from Clipboard"}
+    </button>
   );
 }
 
@@ -133,7 +159,8 @@ function PhotoAttachSection({
   onAdd: (photo: AttachedPhoto) => void;
   onRemove: (relativePath: string) => void;
 }) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const uploadPhoto = useUploadPhoto();
   const [uploading, setUploading] = useState(false);
 
@@ -202,17 +229,44 @@ function PhotoAttachSection({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={uploading}
-        className={cn("btn-secondary text-sm flex items-center gap-2", uploading && "opacity-50 cursor-not-allowed")}
-      >
-        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
-        {uploading ? "Uploading…" : "Attach Photo"}
-      </button>
-      {/* capture="environment" opens rear camera by default on Android */}
-      <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFile} />
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => cameraInputRef.current?.click()}
+          disabled={uploading}
+          className={cn("btn-secondary text-sm flex items-center gap-2 flex-1", uploading && "opacity-50 cursor-not-allowed")}
+        >
+          {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+          Camera
+        </button>
+        <button
+          type="button"
+          onClick={() => galleryInputRef.current?.click()}
+          disabled={uploading}
+          className={cn("btn-secondary text-sm flex items-center gap-2 flex-1", uploading && "opacity-50 cursor-not-allowed")}
+        >
+          {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+          Gallery
+        </button>
+      </div>
+      
+      {/* Camera input - uses capture to open camera directly */}
+      <input 
+        ref={cameraInputRef} 
+        type="file" 
+        accept="image/*" 
+        capture="environment" 
+        className="hidden" 
+        onChange={handleFile} 
+      />
+      {/* Gallery input - no capture attribute allows gallery selection */}
+      <input 
+        ref={galleryInputRef} 
+        type="file" 
+        accept="image/*" 
+        className="hidden" 
+        onChange={handleFile} 
+      />
       <p className="text-xs text-ink-400 mt-1.5">Uploaded immediately; embedded in note on save.</p>
     </div>
   );
@@ -242,7 +296,7 @@ export function SaveNotePage() {
 
   const watchedTitle = watch("title", "");
 
-  /** Normalise ISO datetime OR bare date → YYYY-MM-DD for <input type="date"> */
+  /** Normalise ISO datetime OR bare date to YYYY-MM-DD for input type="date" */
   function toDateValue(raw: string): string {
     if (!raw) return "";
     if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
@@ -259,7 +313,7 @@ export function SaveNotePage() {
     if (data.content) setValue("content", data.content);
     if (data.tags) setValue("tags", data.tags);
     if (data.backlinks) setValue("backlinks", data.backlinks);
-    // Unknown fields (like "online") are silently ignored — no crash
+    // Unknown fields (like "online") are silently ignored
   }
 
   function handleRemovePhoto(relativePath: string) {
@@ -302,7 +356,11 @@ export function SaveNotePage() {
         <p className="text-sm text-ink-500 mt-0.5">Create a new note in your Obsidian vault</p>
       </div>
 
-      <JsonImportSection onImport={handleJsonImport} />
+      {/* Paste JSON Button - prominent at top */}
+      <div className="card p-4 border-dashed border-vault-300 bg-vault-50/50">
+        <PasteJsonButton onImport={handleJsonImport} />
+        <p className="text-xs text-ink-400 mt-2 text-center">Copy JSON from AI, then tap to paste and auto-fill the form</p>
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Title */}
@@ -312,12 +370,12 @@ export function SaveNotePage() {
           {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
         </div>
 
-        {/* Note type + PARA — single column on mobile */}
+        {/* Note type + PARA - single column on mobile */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-ink-700 mb-1.5">Note Type *</label>
             <select {...register("note_type")} className="input">
-              <option value="">Select type…</option>
+              <option value="">Select type...</option>
               {noteTypes.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
             {errors.note_type && <p className="text-xs text-red-500 mt-1">{errors.note_type.message}</p>}
@@ -325,7 +383,7 @@ export function SaveNotePage() {
           <div>
             <label className="block text-sm font-medium text-ink-700 mb-1.5">PARA Folder *</label>
             <select {...register("para_suggestion")} className="input">
-              <option value="">Select folder…</option>
+              <option value="">Select folder...</option>
               {paraFolders.map((f) => <option key={f} value={f}>{f}</option>)}
             </select>
             {errors.para_suggestion && <p className="text-xs text-red-500 mt-1">{errors.para_suggestion.message}</p>}
@@ -365,7 +423,7 @@ export function SaveNotePage() {
             {...register("content")}
             rows={10}
             className="input resize-y font-mono text-xs"
-            placeholder="Note content in Markdown…"
+            placeholder="Note content in Markdown..."
           />
           {errors.content && <p className="text-xs text-red-500 mt-1">{errors.content.message}</p>}
         </div>
@@ -382,7 +440,7 @@ export function SaveNotePage() {
         <div className="flex items-center gap-3 pt-2 pb-6">
           <button type="submit" disabled={saveNote.isPending} className="btn-primary flex items-center gap-2">
             {saveNote.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-            {saveNote.isPending ? "Saving…" : "Save Note"}
+            {saveNote.isPending ? "Saving..." : "Save Note"}
           </button>
           {saveNote.isSuccess && (
             <span className="text-sm text-green-600 flex items-center gap-1">

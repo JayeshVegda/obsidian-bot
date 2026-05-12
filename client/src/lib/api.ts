@@ -82,13 +82,6 @@ export interface VaultConfig {
   valid_para_folders: string[];
 }
 
-export interface Prompt {
-  id: string;
-  label: string;
-  description: string;
-  prompt: string;
-}
-
 export interface Photo {
   filename: string;
   relative_path: string;
@@ -111,8 +104,6 @@ export const api = {
 
   saveNote: (payload: NotePayload) =>
     apiClient.post<SaveNoteResponse>("/notes", payload),
-
-  getPrompts: () => apiClient.get<{ prompts: Prompt[] }>("/prompts"),
 
   reindex: () => apiClient.post<{ status: string; total_notes: number; total_tags: number; orphan_count: number; index_pushed: boolean; message: string }>("/index/reindex"),
 
