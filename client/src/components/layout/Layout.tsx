@@ -2,25 +2,21 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   FilePlus,
-  BookOpen,
   Image,
   Settings,
   LogOut,
   Vault,
   RefreshCw,
   RotateCcw,
-  Menu,
-  X,
 } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { useReindex, useRetryPush, useVaultStatus } from "@/hooks/useVault";
 import { toast } from "@/components/ui/Toaster";
 
 const NAV = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/save", icon: FilePlus, label: "Save Note" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Home" },
+  { to: "/save", icon: FilePlus, label: "Save" },
   { to: "/photos", icon: Image, label: "Photos" },
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
@@ -31,7 +27,6 @@ export function Layout() {
   const { data: status } = useVaultStatus();
   const reindex = useReindex();
   const retryPush = useRetryPush();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   function handleLogout() {
     clearApiKey();
@@ -65,23 +60,14 @@ export function Layout() {
           <Vault className="w-4 h-4 text-white" />
         </div>
         <span className="font-semibold text-ink-900 text-sm tracking-tight">Vault Bot</span>
-        {/* Close button — mobile only */}
-        <button
-          onClick={() => setSidebarOpen(false)}
-          className="ml-auto p-1 rounded-md text-ink-400 hover:text-ink-700 hover:bg-ink-100 md:hidden"
-        >
-          <X className="w-4 h-4" />
-        </button>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 p-3 space-y-0.5">
-        {NAV.map(({ to, icon: Icon, label, end }) => (
+        {NAV.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
-            end={end}
-            onClick={() => setSidebarOpen(false)}
             className={({ isActive }) => cn("nav-link", isActive && "active")}
           >
             <Icon className="w-4 h-4" />
@@ -132,55 +118,40 @@ export function Layout() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* ── Desktop sidebar ──────────────────────────────────────────── */}
+      {/* Desktop sidebar */}
       <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-ink-200 bg-white">
         {sidebarContent}
       </aside>
 
-      {/* ── Mobile drawer backdrop ───────────────────────────────────── */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/30 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* ── Mobile drawer ────────────────────────────────────────────── */}
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 flex flex-col border-r border-ink-200 bg-white transition-transform duration-200 md:hidden",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        {sidebarContent}
-      </aside>
-
-      {/* ── Main area ────────────────────────────────────────────────── */}
+      {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Mobile top bar */}
-        <header className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-ink-200 shrink-0">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-1.5 rounded-lg text-ink-500 hover:text-ink-900 hover:bg-ink-100"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
+        {/* Mobile top bar - minimal header with logo and status */}
+        <header className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-ink-200 shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-vault-500 flex items-center justify-center">
-              <Vault className="w-3.5 h-3.5 text-white" />
+            <div className="w-7 h-7 rounded-lg bg-vault-500 flex items-center justify-center">
+              <Vault className="w-4 h-4 text-white" />
             </div>
             <span className="font-semibold text-ink-900 text-sm">Vault Bot</span>
           </div>
-          {status?.index_push_pending && (
+          <div className="flex items-center gap-2">
+            {status?.index_push_pending && (
+              <button
+                onClick={handleRetryPush}
+                disabled={retryPush.isPending}
+                className="p-2 rounded-lg text-orange-500 hover:bg-orange-50"
+                title="Retry push"
+              >
+                <RotateCcw className={cn("w-4 h-4", retryPush.isPending && "animate-spin")} />
+              </button>
+            )}
             <button
-              onClick={handleRetryPush}
-              disabled={retryPush.isPending}
-              className="ml-auto p-1.5 rounded-lg text-orange-500 hover:bg-orange-50"
-              title="Retry push"
+              onClick={handleLogout}
+              className="p-2 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50"
+              title="Sign out"
             >
-              <RotateCcw className={cn("w-4 h-4", retryPush.isPending && "animate-spin")} />
+              <LogOut className="w-4 h-4" />
             </button>
-          )}
+          </div>
         </header>
 
         {/* Scrollable content */}
@@ -190,13 +161,12 @@ export function Layout() {
           </div>
         </main>
 
-        {/* ── Mobile bottom nav ─────────────────────────────────────── */}
+        {/* Instagram-style bottom navigation - mobile only */}
         <nav className="md:hidden shrink-0 flex border-t border-ink-200 bg-white safe-area-bottom">
-          {NAV.map(({ to, icon: Icon, label, end }) => (
+          {NAV.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
-              end={end}
               className={({ isActive }) =>
                 cn(
                   "flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors",
@@ -204,8 +174,8 @@ export function Layout() {
                 )
               }
             >
-              <Icon className="w-5 h-5" />
-              {label}
+              <Icon className={cn("w-6 h-6")} />
+              <span>{label}</span>
             </NavLink>
           ))}
         </nav>

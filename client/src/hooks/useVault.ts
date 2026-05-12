@@ -4,7 +4,6 @@ import { api, type NotePayload } from "@/lib/api";
 export const QUERY_KEYS = {
   status: ["status"] as const,
   config: ["config"] as const,
-  prompts: ["prompts"] as const,
   photos: (limit?: number) => ["photos", limit] as const,
 };
 
@@ -26,17 +25,6 @@ export function useVaultConfig() {
     queryFn: async () => {
       const res = await api.getConfig();
       return res.data;
-    },
-    staleTime: Infinity,
-  });
-}
-
-export function usePrompts() {
-  return useQuery({
-    queryKey: QUERY_KEYS.prompts,
-    queryFn: async () => {
-      const res = await api.getPrompts();
-      return res.data.prompts;
     },
     staleTime: Infinity,
   });
