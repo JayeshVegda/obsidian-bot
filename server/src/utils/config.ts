@@ -20,7 +20,7 @@ const configSchema = z.object({
   }),
   json_input: z.object({
     required_fields: z.array(z.string()),
-    field_types: z.record(z.string()),
+    field_types: z.record(z.string(), z.string()),
   }),
   note_types: z.object({
     allowed: z.array(z.string()),
@@ -41,7 +41,7 @@ const configSchema = z.object({
   }),
   frontmatter: z.object({
     ordered_fields: z.array(z.string()),
-    static_fields: z.record(z.string()),
+    static_fields: z.record(z.string(), z.string()),
     list_fields: z.array(z.string()),
   }),
   index: z.object({

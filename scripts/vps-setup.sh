@@ -56,14 +56,14 @@ ensure_node() {
   if command -v node >/dev/null 2>&1; then
     local major
     major="$(node -e "process.stdout.write(process.versions.node.split('.')[0])")"
-    if [[ "$major" -ge 20 ]]; then
+    if [[ "$major" -ge 24 ]]; then
       ok "Node.js $(node --version)"
       return
     fi
-    warn "Node.js $(node --version) found, but Node 20+ is required"
+    warn "Node.js $(node --version) found, but Node 24+ is required"
   fi
-  warn "Installing Node.js 20"
-  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+  warn "Installing Node.js 24"
+  curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
   sudo apt-get install -y nodejs
   ok "Node.js $(node --version)"
 }

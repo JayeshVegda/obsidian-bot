@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
 @layer base {
   :root {
@@ -19,16 +18,19 @@
   }
 
   * {
-    @apply border-ink-200;
+    border-color: #d9d9de;
   }
 
   html {
-    @apply antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   body {
-    @apply bg-ink-50 text-ink-950 font-sans;
+    background-color: #f7f7f8;
+    color: #111114;
+    font-family: "DM Sans", sans-serif;
     background-image:
       radial-gradient(at 20% 10%, rgba(47, 95, 255, 0.05) 0px, transparent 50%),
       radial-gradient(at 80% 80%, rgba(91, 178, 255, 0.04) 0px, transparent 50%);
@@ -36,57 +38,141 @@
   }
 
   ::-webkit-scrollbar {
-    @apply w-1.5 h-1.5;
+    width: 0.375rem;
+    height: 0.375rem;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-transparent;
+    background-color: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-ink-300 rounded-full;
+    background-color: #b8b8c0;
+    border-radius: 9999px;
   }
 }
 
 @layer components {
   .card {
-    @apply bg-white rounded-xl border border-ink-200 shadow-sm;
+    background-color: #fff;
+    border: 1px solid #d9d9de;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(17, 17, 20, 0.05);
   }
 
   .btn-primary {
-    @apply bg-vault-500 hover:bg-vault-600 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+    background-color: #2f5fff;
+    color: #fff;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 150ms;
+  }
+
+  .btn-primary:hover {
+    background-color: #1a3fff;
+  }
+
+  .btn-primary:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
   .btn-secondary {
-    @apply bg-white hover:bg-ink-50 text-ink-700 font-medium px-4 py-2 rounded-lg border border-ink-200 transition-colors duration-150 disabled:opacity-50;
+    background-color: #fff;
+    color: #4d4d58;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d9d9de;
+    border-radius: 0.5rem;
+    transition: background-color 150ms, color 150ms;
+  }
+
+  .btn-secondary:hover {
+    background-color: #f7f7f8;
+  }
+
+  .btn-secondary:disabled {
+    opacity: 0.5;
   }
 
   .btn-danger {
-    @apply bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-150;
+    background-color: #ef4444;
+    color: #fff;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 150ms;
+  }
+
+  .btn-danger:hover {
+    background-color: #dc2626;
   }
 
   .input {
-    @apply w-full px-3 py-2 rounded-lg border border-ink-200 bg-white text-ink-900 placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-vault-400 focus:border-transparent transition-all duration-150 text-sm;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d9d9de;
+    border-radius: 0.5rem;
+    background-color: #fff;
+    color: #3a3a40;
+    font-size: 0.875rem;
+    transition: border-color 150ms, box-shadow 150ms;
+  }
+
+  .input::placeholder {
+    color: #92929d;
+  }
+
+  .input:focus {
+    border-color: transparent;
+    outline: none;
+    box-shadow: 0 0 0 2px #5885ff;
   }
 
   .tag-chip {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-vault-50 text-vault-700 text-xs font-medium border border-vault-100;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border: 1px solid #e0e9ff;
+    border-radius: 0.375rem;
+    background-color: #f0f4ff;
+    color: #1230e8;
+    font-size: 0.75rem;
+    font-weight: 500;
   }
 
   .stat-card {
-    @apply card p-4 flex flex-col gap-1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem;
   }
 
   .nav-link {
-    @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 150ms, color 150ms;
   }
 
   .nav-link.active {
-    @apply bg-vault-50 text-vault-700;
+    background-color: #f0f4ff;
+    color: #1230e8;
   }
 
   .nav-link:not(.active) {
-    @apply text-ink-600 hover:text-ink-900 hover:bg-ink-100;
+    color: #5e5e6b;
+  }
+
+  .nav-link:not(.active):hover {
+    background-color: #eeeef0;
+    color: #3a3a40;
   }
 }
 

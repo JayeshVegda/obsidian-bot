@@ -2,6 +2,8 @@
 
 A **MERN-stack** rewrite of the Obsidian knowledge pipeline — paste AI-generated JSON → validates → saves `.md` to your vault → updates the GitHub index.
 
+Requires Node.js 24 LTS or newer.
+
 ## Stack
 
 | Layer | Technology |

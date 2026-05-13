@@ -31,10 +31,10 @@ console.log(`\n${CYAN}╔══════════════════�
 console.log(`${CYAN}║     Vault Bot Setup v2.0     ║${RESET}`);
 console.log(`${CYAN}╚══════════════════════════════╝${RESET}\n`);
 
-// Check Node version
+// Check Node version. Node 24 is the current production LTS target for this app.
 const nodeVer = process.versions.node.split(".").map(Number);
-if (nodeVer[0] < 20) {
-  fail(`Node.js 20+ is required. You have ${process.version}`);
+if (nodeVer[0] < 24) {
+  fail(`Node.js 24+ is required. You have ${process.version}`);
   process.exit(1);
 }
 ok(`Node.js ${process.version}`);

@@ -23,11 +23,15 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ["react", "react-dom", "react-router-dom"],
-          ui: ["@radix-ui/react-tabs", "@radix-ui/react-dialog", "@radix-ui/react-toast"],
-          charts: ["recharts"],
-          query: ["@tanstack/react-query", "axios", "zustand"],
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("recharts")) return "charts";
+          if (id.includes("@tanstack/react-query") || id.includes("axios") || id.includes("zustand")) {
+            return "query";
+          }
+          if (id.includes("react") || id.includes("react-dom") || id.includes("react-router")) {
+            return "vendor";
+          }
         },
       },
     },
