@@ -59,12 +59,6 @@ const configSchema = z.object({
     max_bytes: z.number(),
     backup_count: z.number(),
   }),
-  web: z.object({
-    host: z.string(),
-    port: z.number(),
-    prompts_file: z.string(),
-  }),
-  prompts: z.array(z.any()).optional(),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;

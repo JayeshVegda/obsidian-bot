@@ -4,7 +4,7 @@ import { api, type NotePayload } from "@/lib/api";
 export const QUERY_KEYS = {
   status: ["status"] as const,
   config: ["config"] as const,
-  prompts: ["prompts"] as const,
+  settings: ["settings"] as const,
   photos: (limit?: number) => ["photos", limit] as const,
 };
 
@@ -31,14 +31,14 @@ export function useVaultConfig() {
   });
 }
 
-export function usePrompts() {
+export function useAppSettings() {
   return useQuery({
-    queryKey: QUERY_KEYS.prompts,
+    queryKey: QUERY_KEYS.settings,
     queryFn: async () => {
-      const res = await api.getPrompts();
-      return res.data.prompts;
+      const res = await api.getSettings();
+      return res.data;
     },
-    staleTime: Infinity,
+    staleTime: 15_000,
   });
 }
 
@@ -86,7 +86,15 @@ export function useRetryPush() {
 export function useUploadPhoto() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { photo_base64: string; note_title: string; photo_index: number }) =>
+    mutationFn: (data: {
+      photo_base64?: string;
+      note_title?: string;
+      photo_index?: number;
+      file_base64?: string;
+      original_name?: string;
+      mime_type?: string;
+      attachment_index?: number;
+    }) =>
       api.uploadPhoto(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["photos"] });

@@ -12,7 +12,8 @@
     "start": "npm run start --workspace=server",
     "install:all": "npm install && npm install --workspace=server && npm install --workspace=client",
     "lint": "npm run lint --workspace=client",
-    "setup": "node scripts/setup.mjs"
+    "setup": "node scripts/setup.mjs",
+    "setup:vps": "bash scripts/vps-setup.sh"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

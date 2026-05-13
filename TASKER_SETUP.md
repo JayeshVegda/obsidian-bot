@@ -383,7 +383,7 @@ A: You'll need to either:
 - Use a reverse proxy with dynamic DNS
 
 **Q: Can I automate note saving (e.g., every hour)?**
-A: Yes, use Tasker's **Time** profile to trigger the task on a schedule, but customize content via prompts or integration with other apps.
+A: Yes, use Tasker's **Time** profile to trigger the task on a schedule, and customize content through Tasker variables or integrations with other apps.
 
 **Q: What happens if my phone loses internet?**
 A: The HTTP request will fail. Consider using Tasker's **Queue** feature to retry later when connection is restored.

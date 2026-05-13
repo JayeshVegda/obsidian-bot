@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Image, Trash2, Upload, Copy, RefreshCw, Check } from "lucide-react";
+import { File as FileIcon, FileText, Trash2, Upload, Copy, RefreshCw, Check } from "lucide-react";
 import { usePhotos, useUploadPhoto, useDeletePhoto } from "@/hooks/useVault";
 import { toast } from "@/components/ui/Toaster";
 import { formatDate, formatBytes, cn } from "@/lib/utils";
@@ -32,10 +32,11 @@ export function PhotosPage() {
   const deletePhoto = useDeletePhoto();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deletingPath, setDeletingPath] = useState<string | null>(null);
-  const [noteTitle, setNoteTitle] = useState("attachment");
+  const [uploadingCount, setUploadingCount] = useState(0);
   // For HTTP fallback: show the text to copy inline
   const [fallbackText, setFallbackText] = useState<{ path: string; text: string; label: string } | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const isUploading = uploadPhoto.isPending || uploadingCount > 0;
 
   async function copyText(text: string, label: string, photoPath: string) {
     const ok = await copyWithFallback(text);
@@ -50,34 +51,59 @@ export function PhotosPage() {
     }
   }
 
+  function readFileAsBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve((reader.result as string).split(",")[1] || "");
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function isImageAttachment(mimeType = "", filename = ""): boolean {
+    return mimeType.startsWith("image/") || /\.(jpe?g|png|gif|webp|heic|heif)$/i.test(filename);
+  }
+
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = (reader.result as string).split(",")[1];
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setUploadingCount(files.length);
+    let uploaded = 0;
+    const failed: string[] = [];
+
+    for (const [index, file] of files.entries()) {
       try {
-        const res = await uploadPhoto.mutateAsync({
-          photo_base64: base64,
-          note_title: noteTitle || "attachment",
-          photo_index: 0,
+        const base64 = await readFileAsBase64(file);
+        await uploadPhoto.mutateAsync({
+          file_base64: base64,
+          original_name: file.name,
+          mime_type: file.type,
+          attachment_index: index,
         });
-        toast("success", "Photo uploaded", res.data.filename);
+        uploaded += 1;
       } catch (err: unknown) {
         const e = err as { response?: { data?: { message?: string } } };
-        toast("error", "Upload failed", e.response?.data?.message);
+        failed.push(e.response?.data?.message || file.name);
+      } finally {
+        setUploadingCount((count) => Math.max(0, count - 1));
       }
-    };
-    reader.readAsDataURL(file);
+    }
+
+    if (uploaded) {
+      toast("success", "Upload complete", `${uploaded} file${uploaded === 1 ? "" : "s"} stored`);
+    }
+    if (failed.length) {
+      toast("error", "Some files failed", failed.slice(0, 2).join("; "));
+    }
     e.target.value = "";
   }
 
   async function handleDelete(relativePath: string) {
-    if (!confirm("Delete this photo?")) return;
+    if (!confirm("Delete this attachment?")) return;
     setDeletingPath(relativePath);
     try {
       await deletePhoto.mutateAsync(relativePath);
-      toast("success", "Photo deleted");
+      toast("success", "Attachment deleted");
       if (fallbackText?.path === relativePath) setFallbackText(null);
     } catch {
       toast("error", "Delete failed");
@@ -90,8 +116,8 @@ export function PhotosPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-ink-900">Photos</h1>
-          <p className="text-sm text-ink-500 mt-0.5">Attachments stored in your vault</p>
+          <h1 className="text-xl font-semibold text-ink-900">Docs</h1>
+          <p className="text-sm text-ink-500 mt-0.5">Upload files directly into your vault attachments folder</p>
         </div>
         <button onClick={() => refetch()} className="btn-secondary text-xs gap-1.5">
           <RefreshCw className="w-3.5 h-3.5" /> Refresh
@@ -100,32 +126,25 @@ export function PhotosPage() {
 
       {/* Upload panel */}
       <div className="card p-4 space-y-3">
-        <p className="text-sm font-medium text-ink-700">Upload Photo</p>
-        <div className="flex gap-3">
-          <input
-            type="text"
-            value={noteTitle}
-            onChange={(e) => setNoteTitle(e.target.value)}
-            placeholder="Note title (for filename)"
-            className="input flex-1"
-          />
+        <p className="text-sm font-medium text-ink-700">Upload Documents</p>
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploadPhoto.isPending}
+            disabled={isUploading}
             className="btn-primary flex items-center gap-2 whitespace-nowrap"
           >
-            {uploadPhoto.isPending ? (
+            {isUploading ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
               <Upload className="w-4 h-4" />
             )}
-            {uploadPhoto.isPending ? "Uploading…" : "Choose File"}
+            {isUploading ? `Uploading ${uploadingCount || ""}`.trim() : "Choose Files"}
           </button>
+          <p className="text-xs text-ink-400">Select one or more files. PDFs, Office docs, text, markdown, CSV, JSON, zips, and images are supported.</p>
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
-            capture="environment"
+            multiple
             className="hidden"
             onChange={handleUpload}
           />
@@ -159,24 +178,32 @@ export function PhotosPage() {
         </div>
       ) : !photos?.length ? (
         <div className="card p-12 text-center text-ink-400">
-          <Image className="w-10 h-10 mx-auto mb-2 opacity-30" />
-          <p className="text-sm">No photos yet</p>
+          <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
+          <p className="text-sm">No attachments yet</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {photos.map((photo) => {
             const embedKey = `${photo.relative_path}-embed`;
             const wikiKey = `${photo.relative_path}-wiki`;
+            const isImage = isImageAttachment(photo.mime_type, photo.filename);
             return (
               <div key={photo.relative_path} className="card p-3 space-y-2">
                 {/* Preview */}
                 <div className="h-36 rounded-lg bg-ink-100 overflow-hidden flex items-center justify-center">
-                  <img
-                    src={`/api/photos/file/${encodeURIComponent(photo.relative_path)}`}
-                    alt={photo.filename}
-                    className="w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                  />
+                  {isImage ? (
+                    <img
+                      src={`/api/photos/file/${encodeURIComponent(photo.relative_path)}`}
+                      alt={photo.filename}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-ink-400">
+                      <FileIcon className="w-10 h-10" />
+                      <span className="text-xs font-medium uppercase">{photo.filename.split(".").pop() || "file"}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Meta */}

@@ -88,35 +88,58 @@ function JsonImportSection({
   const [json, setJson] = useState("");
   const [error, setError] = useState("");
 
-  function handleImport() {
+  function tryImport(raw: string, showInvalid = false): boolean {
     try {
-      const parsed = JSON.parse(json);
+      const parsed = JSON.parse(raw);
+      if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") {
+        throw new Error("JSON must be an object");
+      }
       onImport(parsed);
       setJson("");
       setError("");
       toast("success", "JSON imported", "Form fields populated");
+      return true;
     } catch {
-      setError("Invalid JSON — check the format and try again");
+      if (showInvalid) setError("Invalid JSON — check the format and try again");
+      return false;
+    }
+  }
+
+  function handleChange(value: string) {
+    setJson(value);
+    setError("");
+    if (value.trim()) tryImport(value);
+  }
+
+  async function handlePasteClipboard() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text.trim()) {
+        setError("Clipboard is empty");
+        return;
+      }
+      if (!tryImport(text, true)) setJson(text);
+    } catch {
+      setError("Clipboard access is not available here");
     }
   }
 
   return (
     <div className="card p-4 space-y-3 border-dashed">
-      <p className="text-sm font-medium text-ink-600">Paste AI-generated JSON</p>
+      <p className="text-sm font-medium text-ink-600">Paste Clipboard JSON</p>
       <textarea
         value={json}
-        onChange={(e) => { setJson(e.target.value); setError(""); }}
+        onChange={(e) => handleChange(e.target.value)}
         placeholder={'{ "title": "...", "tags": [...], ... }'}
         className="input h-28 resize-none font-mono text-xs"
       />
       {error && <p className="text-xs text-red-500">{error}</p>}
       <button
         type="button"
-        onClick={handleImport}
-        disabled={!json.trim()}
+        onClick={handlePasteClipboard}
         className="btn-secondary text-sm"
       >
-        Import JSON
+        Paste Clipboard
       </button>
     </div>
   );
@@ -211,8 +234,7 @@ function PhotoAttachSection({
         {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
         {uploading ? "Uploading…" : "Attach Photo"}
       </button>
-      {/* capture="environment" opens rear camera by default on Android */}
-      <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFile} />
+      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
       <p className="text-xs text-ink-400 mt-1.5">Uploaded immediately; embedded in note on save.</p>
     </div>
   );
@@ -324,10 +346,15 @@ export function SaveNotePage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-ink-700 mb-1.5">PARA Folder *</label>
-            <select {...register("para_suggestion")} className="input">
-              <option value="">Select folder…</option>
-              {paraFolders.map((f) => <option key={f} value={f}>{f}</option>)}
-            </select>
+            <input
+              {...register("para_suggestion")}
+              list="para-folder-suggestions"
+              className="input"
+              placeholder="00_Inbox or 10_Projects/Project_Name"
+            />
+            <datalist id="para-folder-suggestions">
+              {paraFolders.map((f) => <option key={f} value={f} />)}
+            </datalist>
             {errors.para_suggestion && <p className="text-xs text-red-500 mt-1">{errors.para_suggestion.message}</p>}
           </div>
         </div>
@@ -359,7 +386,7 @@ export function SaveNotePage() {
         />
 
         {/* Content */}
-        <div>
+        <div className="space-y-3">
           <label className="block text-sm font-medium text-ink-700 mb-1.5">Content *</label>
           <textarea
             {...register("content")}
@@ -368,15 +395,14 @@ export function SaveNotePage() {
             placeholder="Note content in Markdown…"
           />
           {errors.content && <p className="text-xs text-red-500 mt-1">{errors.content.message}</p>}
-        </div>
 
-        {/* Photo attachments */}
-        <PhotoAttachSection
-          noteTitle={watchedTitle}
-          photos={attachedPhotos}
-          onAdd={(photo) => setAttachedPhotos((prev) => [...prev, photo])}
-          onRemove={handleRemovePhoto}
-        />
+          <PhotoAttachSection
+            noteTitle={watchedTitle}
+            photos={attachedPhotos}
+            onAdd={(photo) => setAttachedPhotos((prev) => [...prev, photo])}
+            onRemove={handleRemovePhoto}
+          />
+        </div>
 
         {/* Submit */}
         <div className="flex items-center gap-3 pt-2 pb-6">

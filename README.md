@@ -22,10 +22,10 @@ vault-bot/
 ├── .env.example          ← copy to .env and fill in
 ├── .env                  ← your secrets (gitignored)
 ├── config.yaml           ← vault behavior config
-├── prompts.yaml          ← AI prompt templates per note type
 ├── package.json          ← npm workspaces root
 ├── scripts/
-│   └── setup.mjs         ← first-time setup script
+│   ├── setup.mjs         ← local development setup
+│   └── vps-setup.sh      ← production VPS setup
 ├── logs/                 ← auto-created, rotating log files
 │
 ├── server/               ← Express API (Node.js)
@@ -37,14 +37,14 @@ vault-bot/
 │   │   ├── routes/
 │   │   │   ├── notes.ts  ← POST /api/notes
 │   │   │   ├── status.ts ← GET  /api/status
-│   │   │   ├── photos.ts ← photo CRUD + serving
+│   │   │   ├── photos.ts ← attachment upload, list, delete, serve
 │   │   │   ├── index.ts  ← reindex + retry-push
-│   │   │   └── config.ts ← GET /api/config, /prompts, /test-key
+│   │   │   └── config.ts ← GET /api/config, /test-key
 │   │   ├── services/
 │   │   │   ├── validator.ts  ← 3-layer Zod + business rules
 │   │   │   ├── writer.ts     ← JSON → .md with YAML frontmatter
 │   │   │   ├── indexer.ts    ← vault-index.json + git push
-│   │   │   ├── photoHandler.ts ← base64 upload, serve, delete
+│   │   │   ├── photoHandler.ts ← attachment upload, serve, delete
 │   │   │   └── state.ts      ← bot_state.json, retry_state.json
 │   │   └── utils/
 │   │       ├── config.ts     ← config.yaml loader + Zod schema
@@ -70,7 +70,6 @@ vault-bot/
     │       │   ├── LoginPage.tsx
     │       │   ├── DashboardPage.tsx ← stats + charts
     │       │   ├── SaveNotePage.tsx  ← form + JSON import
-    │       │   ├── PromptsPage.tsx
     │       │   ├── PhotosPage.tsx
     │       │   └── SettingsPage.tsx
     │       └── ui/
@@ -93,7 +92,6 @@ node scripts/setup.mjs
 ```bash
 nano .env          # fill in all values (see .env.example)
 nano config.yaml   # adjust vault behavior if needed
-nano prompts.yaml  # customize AI prompts
 ```
 
 ### 3. Run in development
@@ -114,13 +112,15 @@ Go to `http://localhost:5173` and sign in with your `API_SECRET_KEY`.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
+| `APP_DOMAIN` | — | Deployment domain used by the VPS setup script |
 | `API_SECRET_KEY` | ✅ | Min 16-char secret; used as `X-API-Key` header |
 | `VAULT_PATH` | ✅ | Absolute path to your Obsidian vault |
 | `VAULT_INDEX_PATH` | ✅ | Local path or remote URL to `vault-index.json` |
 | `GITHUB_REPO_PATH` | ✅ | Local path to the git repo for pushing the index |
-| `VAULT_INDEX_GITHUB_URL` | — | Public raw URL; injected into AI prompts |
+| `VAULT_INDEX_GITHUB_URL` | — | Public raw URL for your vault index |
 | `PORT` | — | API server port (default: `4000`) |
 | `HOST` | — | Server bind address (default: `0.0.0.0`) |
+| `BODY_LIMIT` | — | JSON request body limit for uploads (default: `35mb`) |
 | `CORS_ORIGINS` | — | Comma-separated origins (default: `http://localhost:5173`) |
 | `LOG_LEVEL` | — | `error`/`warn`/`info`/`debug` (default: `info`) |
 | `NODE_ENV` | — | `development`/`production` (default: `development`) |
@@ -135,16 +135,16 @@ All routes returning data require `X-API-Key: <your-key>` header, except `GET /a
 |--------|------|------|-------------|
 | `GET` | `/api/health` | — | Health check |
 | `GET` | `/api/config` | — | Note types, PARA folders, version |
+| `GET` | `/api/settings` | ✅ | Runtime path and sync checks |
 | `GET` | `/api/test-key` | ✅ | Validate API key |
 | `POST` | `/api/notes` | ✅ | Save a note to the vault |
 | `GET` | `/api/status` | ✅ | Vault stats, recent notes, push state |
-| `GET` | `/api/prompts` | ✅ | AI prompt templates |
 | `POST` | `/api/index/reindex` | ✅ | Full vault reindex |
 | `POST` | `/api/index/retry-push` | ✅ | Retry failed git push |
-| `GET` | `/api/photos` | ✅ | List recent photos |
-| `POST` | `/api/photos/upload` | ✅ | Upload photo (base64) |
-| `DELETE` | `/api/photos` | ✅ | Delete a photo |
-| `GET` | `/api/photos/file/:path` | — | Serve a photo |
+| `GET` | `/api/photos` | ✅ | List recent attachments |
+| `POST` | `/api/photos/upload` | ✅ | Upload attachment (base64) |
+| `DELETE` | `/api/photos` | ✅ | Delete an attachment |
+| `GET` | `/api/photos/file/:path` | — | Serve an attachment |
 
 ### POST /api/notes — payload
 
@@ -163,48 +163,50 @@ All routes returning data require `X-API-Key: <your-key>` header, except `GET /a
 
 ---
 
-## Production Deployment
+## VPS Deployment
 
-### Build
+For a VPS, use the guided setup script. It asks for your domain, vault path, vault-index repo/path, Git identity, raw index URL, installs/builds the app, writes systemd and nginx config, and can run certbot for HTTPS.
+
+```bash
+bash scripts/vps-setup.sh
+```
+
+The default domain prompt is `note.zayu.dev`, but it is only a default. You can enter any domain. You can also override it non-interactively:
+
+```bash
+VAULT_BOT_DOMAIN=note.zayu.dev bash scripts/vps-setup.sh
+```
+
+The script sets production-safe defaults:
+
+- `NODE_ENV=production`
+- `HOST=127.0.0.1`
+- `CORS_ORIGINS=https://<your-domain>`
+- `BODY_LIMIT=35mb`
+- systemd service: `vault-bot`
+- nginx reverse proxy to the local Node server
+- attachment upload body size: `40M` at nginx
+
+After setup, open the Settings page in the app. It checks whether your project path, vault path, attachments folder, vault index path, and GitHub index repo are correct.
+
+### Manual Build
 
 ```bash
 npm run build
+npm start
 ```
 
-This compiles TypeScript for the server (`server/dist/`) and bundles the frontend (`client/dist/`).
+This compiles TypeScript for the server (`server/dist/`) and bundles the frontend (`client/dist/`). The Express server serves the built React app automatically in production.
 
-The Express server serves the built React app automatically in production.
-
-### Systemd service
+### Useful VPS Commands
 
 ```bash
-# Edit vault-bot.service → replace YOUR_USERNAME
-sudo cp vault-bot.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now vault-bot
 sudo systemctl status vault-bot
+journalctl -u vault-bot -f
+sudo systemctl restart vault-bot
+sudo nginx -t
+sudo systemctl reload nginx
 ```
-
-### Nginx (optional reverse proxy)
-
-```nginx
-server {
-    listen 80;
-    server_name yourdomain.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:4000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        client_max_body_size 25M;
-    }
-}
-```
-
-### Environment in production
-
-Set `NODE_ENV=production` and `CORS_ORIGINS=https://yourdomain.com` in `.env`.
 
 ---
 

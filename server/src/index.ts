@@ -38,8 +38,8 @@ app.use(
 );
 
 // Body parsing
-app.use(express.json({ limit: "20mb" }));
-app.use(express.urlencoded({ extended: true, limit: "20mb" }));
+app.use(express.json({ limit: env.BODY_LIMIT }));
+app.use(express.urlencoded({ extended: true, limit: env.BODY_LIMIT }));
 
 // Logging
 app.use(

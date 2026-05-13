@@ -22,6 +22,7 @@ const envSchema = z.object({
 
   // Optional
   CORS_ORIGINS: z.string().default("http://localhost:5173"),
+  BODY_LIMIT: z.string().default("35mb"),
   LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).default("info"),
 });
 
