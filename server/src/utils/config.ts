@@ -27,7 +27,7 @@ const configSchema = z.object({
   }),
   validation: z.object({
     min_content_words: z.number(),
-    max_content_words: z.number(),
+    max_content_words: z.number().optional(),
     max_title_length: z.number(),
     forbidden_titles: z.array(z.string()),
     forbidden_title_match: z.string().default("exact_word_only"),

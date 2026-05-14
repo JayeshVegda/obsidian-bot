@@ -68,7 +68,6 @@ note_types:
 
 validation:
   min_content_words: 20
-  max_content_words: 5000
   max_title_length: 120
   forbidden_titles:
     - note
